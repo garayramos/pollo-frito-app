@@ -1,0 +1,131 @@
+main {
+    padding: 20px;
+}
+
+table {
+    width: 98%;
+    border-collapse: collapse;
+    background: white;
+    margin-bottom: 20px;
+    margin: 20px auto;
+}
+
+th,
+td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background: #ff6600;
+    color: white;
+}
+
+form {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: 0 0 10px #ccc;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0 12px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.actions button {
+    margin-right: 5px;
+    padding: 6px 10px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-contenido {
+    background-color: #fff;
+    margin: auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cerrar-modal {
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cerrar-modal:hover {
+    color: red;
+}
+
+.modal input,
+.modal select,
+.modal button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.oculto {
+    display: none;
+}
+
+.buscador-container {
+    display: flex;
+    align-items: center;
+    /* centra verticalmente */
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.buscador-container label {
+    background-color: #ff6600;
+    padding: 0 12px;
+    border-radius: 4px 0 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+.buscador-container label i {
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+}
+
+#buscadorProductos {
+    width: 300px;
+    border-radius: 0 4px 4px 0;
+    border: 1px solid #ccc;
+    height: 38px;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    line-height: 1;
+    margin: 0;
+    /* 🔧 elimina posible margen inferior por Bootstrap */
+}

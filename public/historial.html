@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Ventas</title>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+    <link rel="stylesheet" href="public/CSS/estilos.css">
+    <link rel="stylesheet" href="public/CSS/historial.css">
+    <style>
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background-color: #fff;
+            font-weight: bold;
+        }
+
+        .contenido-tab {
+            display: none;
+        }
+
+        .contenido-tab.activo {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <main>
+        <h2><i class="fa-solid fa-calendar-days"></i> Historial de Ventas</h2>
+
+        <section id="filtroFechas" hidden>
+            <p><strong>Hoy:</strong> <span id="hoy"></span> | <strong>Ayer:</strong> <span id="ayer"></span></p>
+        </section>
+
+        <div class="tabs">
+            <div id='tabHoy' class="tab active" onclick="mostrarTab('hoy')">Hoy</div>
+            <div id='tabAyer' class="tab" onclick="mostrarTab('ayer')">Ayer</div>
+            <div id="tabFiltrado" class="tab" onclick="mostrarTab('filtrado')">Filtrar por Fechas</div>
+        </div>
+
+        <div id="tab-hoy" class="contenido-tab activo">
+            <section id="tablaHoy">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Total</th>
+                            <th>Método de Pago</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ventasHoyBody">
+                        <!-- JS lo llenará -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <div id="tab-ayer" class="contenido-tab">
+            <section id="tablaAyer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Método de Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ventasAyerBody">
+                        <!-- JS lo llenará -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+        <div id="tab-filtrado" class="contenido-tab">
+            <section id="tablaFiltrada">
+                <div class="contenedor-filtros">
+                    <div class="grupo-botones">
+                        <button id="btn7dias" class="boton-inactivo" onclick="filtrarUltimos7Dias()">Últimos 7
+                            días</button>
+                        <button id="btn30dias" class="boton-inactivo" onclick="filtrarUltimos30Dias()">Últimos 30
+                            días</button>
+                    </div>
+
+                    <div class="grupo-input">
+                        <input type="text" id="rangoFechas" placeholder="Selecciona un rango de fechas" readonly>
+                        <button id="btnBuscar" class="boton-inactivo" onclick="filtrarVentasPorFecha()"><i
+                                class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+                    </div>
+                </div>
+
+                <br><br>
+
+                <label id="totalVentas" style="font-weight: bold; font-size: 18px;">Total: Q0.00</label>
+                <br>
+                <canvas id="graficaVentas" width="600" height="400"></canvas>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Total</th>
+                            <th>Método de Pago</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filtradaBody">
+                        <!-- Resultados se insertarán aquí -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Litepicker CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <!-- Litepicker JS -->
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
+    <script src="public/JS/navbar.js"></script>
+    <script src="public/JS/utils.js"></script>
+    <script src="public/JS/historial.js"></script>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const usuario = JSON.parse(localStorage.getItem('usuarioActual'));
+            if (usuario?.rol === 'admin') {
+                document.getElementById('tabFiltrado').style.display = 'inline-block';
+                // NO ocultes el contenido si es admin
+            } else {
+                document.getElementById('tabFiltrado').style.display = 'none';
+                document.getElementById('tab-filtrado').style.display = 'none';
+            }
+        });
+    </script>
+
+
+
+    <!-- Modal detalle venta -->
+    <div id="modalDetalle" class="modal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:20px; max-width:600px; width:90%; border-radius:8px; position:relative;">
+            <button id="cerrarModal" style="position:absolute; top:10px; right:10px;">X</button>
+            <h2 id="detalle-id-pedido" style="color: #ff6600"></h2>
+            <h3>Detalle de la Venta</h3>
+            <table id="tablaDetalle" border="1" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aquí se llenan los detalles -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="notificacion" class="notificacion oculto"></div>
+
+    <div id="pantalla-cargando" class="cargando oculto">
+        <div class="spinner"></div>
+        <p id="textoCargando">Cargando...</p>
+    </div>
+
+</body>
+
+</html>

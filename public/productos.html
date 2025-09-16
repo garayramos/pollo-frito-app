@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Control de Inventario - Pollo Frito</title>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+    <link rel="stylesheet" href="public/CSS/estilos.css">
+    <link rel="stylesheet" href="public/CSS/productos.css">
+</head>
+
+<body>
+
+    <div id="navbar"></div>
+    <div class="tabs" id="categorias"></div>
+    <div class="productos" id="productos"></div>
+    <br><br>
+    <h2> <i class="fa-solid fa-table-list"></i> Control de Inventario</h2>
+
+    <div style="text-align: center; margin: 20px;">
+        <button id="abrirModalBtn" style="padding: 10px 20px; font-size: 16px;"><i
+                class="fa-solid fa-square-plus fa-lg"></i>
+            Crear producto</button>
+    </div>
+    <div class="buscador-container">
+        <label for="buscadorProductos">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </label>
+        <input type="text" id="buscadorProductos" placeholder="Buscar producto..." class="form-control mb-3">
+    </div>
+
+
+
+    <table id="productosTable">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Categoría</th>
+                <th>Activo</th>
+                <th>Imagen</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Productos se cargarán aquí -->
+        </tbody>
+    </table>
+
+    <div id="message"></div>
+
+
+
+    <script>
+        const inputBusqueda = document.getElementById('buscadorProductos');
+
+        inputBusqueda.addEventListener('input', () => {
+            const filtro = inputBusqueda.value.toLowerCase();
+            const filas = document.querySelectorAll('#productosTable tbody tr');
+
+            filas.forEach(fila => {
+                const textoFila = fila.textContent.toLowerCase();
+                if (textoFila.includes(filtro)) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script src="public/JS/navbar.js"></script>
+    <script src="public/JS/utils.js"></script>
+
+    <div id="notificacion" class="notificacion oculto"></div>
+
+    <div id="pantalla-cargando" class="cargando oculto">
+        <div class="spinner"></div>
+        <p>Cargando productos...</p>
+    </div>
+    <div id="modalProducto" class="modal oculto">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModalBtn">&times;</span>
+            <h3 style="text-align:center;">Crear / Editar Producto</h3>
+            <form id="productoForm">
+                <input type="hidden" id="productoId" />
+                <input type="text" id="nombre" placeholder="Nombre" required />
+                <input type="text" id="descripcion" placeholder="Descripción" />
+                <input type="number" step="0.01" id="precio" placeholder="Precio" required />
+                <input type="number" id="stock" placeholder="Stock" required />
+                <input type="text" id="categoria" placeholder="Categoría" />
+                <input type="text" id="imagen" placeholder="Link de imagen (opcional)" />
+                <select id="activo">
+                    <option value="true" selected>Activo</option>
+                    <option value="false">Inactivo</option>
+                </select>
+                <button type="submit">Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const apiUrl = 'http://localhost:3000/api/productos';
+
+        const productosTableBody = document.querySelector('#productosTable tbody');
+        const form = document.getElementById('productoForm');
+        const messageDiv = document.getElementById('message');
+
+
+        // Cargar productos
+        async function cargarProductos() {
+
+            try {
+                const sucursalId = localStorage.getItem('sucursalId') || '1'; // default 1 si no hay nada
+                const urlConSucursal = apiUrl + `?sucursal=${sucursalId}`;
+
+                const res = await fetch(urlConSucursal);
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.mensaje || 'Error desconocido');
+                }
+                mostrarCargando();
+                const productos = await res.json();
+                console.log(productos);
+
+                productosTableBody.innerHTML = '';
+
+                productos.forEach(prod => {
+                    const tr = document.createElement('tr');
+
+                    tr.innerHTML = `
+            <td>${prod.nombre}</td>
+            <td>${prod.descripcion || ''}</td>
+            <td>Q${Number(prod.precio).toFixed(2)}</td>
+            <td>${prod.stock}</td>
+            <td>${prod.categoria || ''}</td>
+            <td>
+                <input type="checkbox" class="toggle-activo" data-id="${prod.id}" ${prod.activo ? 'checked' : ''}>
+            </td>
+            <td>
+                ${prod.imagen
+                            ? `<img src="${prod.imagen}" alt="${prod.nombre}" style="width: 60px; height: 60px; object-fit: cover;" />`
+                            : `<span>Sin imagen</span>`
+                        }
+            </td>
+            <td class="actions">
+            <button onclick="editarProducto(${prod.id})"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+            <button onclick="eliminarProducto(${prod.id})"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+            </td>
+        `;
+                    productosTableBody.appendChild(tr);
+                });
+                ocultarCargando();
+                asignarListenersToggle();
+            } catch (error) {
+                console.error('Error al obtener productos:', error.message);
+                mostrarNotificacion('Error al mostrar los productos: ' + error.message, 'error');
+            }
+        }
+
+        function asignarListenersToggle() {
+            document.querySelectorAll('.toggle-activo').forEach(toggle => {
+                toggle.addEventListener('change', async (e) => {
+                    mostrarCargando();
+                    const checkbox = e.target;
+                    const id = checkbox.getAttribute('data-id');
+                    const nuevoEstado = checkbox.checked;
+                    console.log(`Intentando actualizar producto ${id} a activo=${nuevoEstado}`);
+                    checkbox.disabled = true; // Evita múltiples clics
+
+                    try {
+                        const res = await fetch(`${apiUrl}/${id}/estado`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ activo: nuevoEstado })
+                        });
+
+                        const data = await res.json();
+                        console.log('Respuesta backend:', data);
+                        if (!res.ok) {
+                            mostrarNotificacion(data.mensaje || 'Error al actualizar estado', 'error');
+                            checkbox.checked = !nuevoEstado; // Revertir visualmente
+                        } else {
+                            mostrarNotificacion(`Producto ${nuevoEstado ? 'activado' : 'desactivado'}`, 'exito');
+                        }
+                    } catch (error) {
+                        console.error('Error en fetch:', error);
+                        mostrarNotificacion('Error de conexión con el servidor', 'error');
+                        checkbox.checked = !nuevoEstado;
+                    } finally {
+                        checkbox.disabled = false;
+                    }
+                    ocultarCargando();
+                });
+            });
+        }
+
+        // Editar producto (cargar datos al formulario)
+        async function editarProducto(id) {
+            try {
+                const res = await fetch(`${apiUrl}/${id}`);
+                if (!res.ok) throw new Error();
+                const prod = await res.json();
+
+                document.getElementById('productoId').value = prod.id;
+                document.getElementById('nombre').value = prod.nombre;
+                document.getElementById('descripcion').value = prod.descripcion || '';
+                document.getElementById('precio').value = prod.precio;
+                document.getElementById('stock').value = prod.stock;
+                document.getElementById('categoria').value = prod.categoria || '';
+                document.getElementById('imagen').value = prod.imagen || '';
+                document.getElementById('activo').value = prod.activo ? 'true' : 'false';
+                modal.classList.remove('oculto');
+                modal.style.display = 'block';
+            } catch {
+                mostrarNotificacion('Error al cargar el producto', 'error');
+            }
+
+        }
+
+        // Eliminar producto (marcar inactivo)
+        async function eliminarProducto(id) {
+            if (!confirm('¿Seguro que quieres eliminar este producto?')) return;
+
+            try {
+                const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (res.ok) {
+                    mostrarNotificacion(data.mensaje, 'exito');
+                    cargarProductos();
+                } else {
+                    mostrarNotificacion(data.mensaje || 'Error eliminando producto', 'error');
+                }
+            } catch {
+                mostrarNotificacion('Error eliminando producto', 'error');
+            }
+        }
+
+        // Crear o actualizar producto
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('productoId').value;
+            const nombre = document.getElementById('nombre').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const precio = parseFloat(document.getElementById('precio').value);
+            const stock = parseInt(document.getElementById('stock').value);
+            const categoria = document.getElementById('categoria').value.trim();
+            const imagen = document.getElementById('imagen').value;
+            const activo = document.getElementById('activo').value === 'true';
+
+            if (!nombre || isNaN(precio) || isNaN(stock)) {
+                mostrarNotificacion('Por favor completa los campos obligatorios', 'error');
+                return;
+            }
+
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `${apiUrl}/${id}` : apiUrl;
+
+            try {
+                const res = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, descripcion, precio, stock, categoria, imagen, activo }),
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    mostrarNotificacion(data.mensaje, 'exito');
+                    form.reset();
+                    document.getElementById('productoId').value = '';
+                    cargarProductos();
+                } else {
+                    mostrarNotificacion(data.mensaje || 'Error guardando producto', 'error');
+                }
+            } catch {
+                mostrarNotificacion('Error conectando con el servidor', 'error');
+            }
+        });
+
+        // Carga inicial
+        cargarProductos();
+
+        function mostrarNotificacion(mensaje, tipo = 'exito', duracion = 3000) {
+            const noti = document.getElementById('notificacion');
+            noti.textContent = mensaje;
+            noti.className = `notificacion ${tipo}`;
+            noti.classList.remove('oculto');
+
+            setTimeout(() => {
+                noti.classList.add('oculto');
+            }, duracion);
+        }
+
+        function mostrarCargando() {
+            document.getElementById('pantalla-cargando').classList.remove('oculto');
+        }
+
+        function ocultarCargando() {
+            document.getElementById('pantalla-cargando').classList.add('oculto');
+        }
+    </script>
+
+    <script>
+        const abrirModalBtn = document.getElementById('abrirModalBtn');
+        const modal = document.getElementById('modalProducto');
+        const cerrarModalBtn = document.getElementById('cerrarModalBtn');
+        const productoForm = document.getElementById('productoForm');
+
+        abrirModalBtn.addEventListener('click', () => {
+            modal.classList.remove('oculto');
+            modal.style.display = 'block';
+        });
+
+        cerrarModalBtn.addEventListener('click', () => {
+            modal.classList.add('oculto');
+            modal.style.display = 'none';
+            productoForm.reset();
+            document.getElementById('productoId').value = '';
+        });
+
+        // También cerrar si se hace clic fuera del contenido
+        window.addEventListener('click', function (e) {
+            if (e.target == modal) {
+                modal.classList.add('oculto');
+                modal.style.display = 'none';
+                productoForm.reset();
+                document.getElementById('productoId').value = '';
+            }
+        });
+    </script>
+
+
+</body>
+
+
+</html>

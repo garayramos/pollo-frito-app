@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Pollo Frito</title>
+  <link rel="icon" type="image/png"
+    href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+  <link rel="stylesheet" href="public/CSS/estilos.css">
+  <link rel="stylesheet" href="public/CSS/login.css">
+</head>
+
+<body>
+
+  <div class="login-wrapper">
+    <img
+      src="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png"
+      alt="Logo" class="logo-login">
+    <div class="login-container">
+      <h2>Iniciar Sesión</h2>
+      <form id="loginForm">
+        <input type="text" id="usuario" placeholder="Usuario" required />
+        <input type="password" id="contraseña" placeholder="Contraseña" required />
+        <button type="submit">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    let usuarioActual = null; // variable global para usuario logueado
+
+    form.addEventListener('submit', async (e) => {
+      mostrarCargando();
+
+      e.preventDefault();
+
+      const usuario = document.getElementById('usuario').value.trim();
+      const contraseña = document.getElementById('contraseña').value.trim();
+
+      try {
+        const response = await fetch('http://localhost:3000/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ usuario, contraseña })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          usuarioActual = data;
+          window.location.href = 'selectSucursal.html';
+          localStorage.setItem('usuarioActual', JSON.stringify(data));
+          // Aquí puedes redirigir a otra página o guardar token si usas JWT
+          ocultarCargando();
+        } else {
+          mostrarNotificacion(data.mensaje, 'error');
+          ocultarCargando();
+        }
+      } catch (error) {
+        mostrarNotificacion('Error de conexión con el servidor', 'error');
+        ocultarCargando();
+      }
+    });
+  </script>
+  <script src="public/JS/utils.js"></script>
+
+
+
+  <div id="notificacion" class="notificacion oculto"></div>
+
+  <div id="pantalla-cargando" class="cargando oculto">
+    <div class="spinner"></div>
+    <p>Iniciando sesión...</p>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro de Usuarios - Pollo Frito</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+    .register-container {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      width: 320px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #ff6600;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #e65500;
+    }
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .message.error {
+      color: red;
+    }
+    .message.success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h2>Registrar Usuario</h2>
+    <form id="registerForm">
+      <input type="text" id="nombre" placeholder="Nombre completo" required />
+      <input type="text" id="usuario" placeholder="Usuario" required />
+      <input type="email" id="correo" placeholder="Correo (opcional)" />
+      <input type="password" id="contraseña" placeholder="Contraseña" required />
+      <select id="rol" required>
+        <option value="vendedor" selected>Vendedor</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button type="submit">Registrar</button>
+    </form>
+    <div id="message" class="message"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      messageDiv.className = 'message';
+
+      const nombre = document.getElementById('nombre').value.trim();
+      const usuario = document.getElementById('usuario').value.trim();
+      const correo = document.getElementById('correo').value.trim();
+      const contraseña = document.getElementById('contraseña').value.trim();
+      const rol = document.getElementById('rol').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, usuario, correo, contraseña, rol })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageDiv.classList.add('success');
+          messageDiv.textContent = data.mensaje;
+          form.reset();
+        } else {
+          messageDiv.classList.add('error');
+          messageDiv.textContent = data.mensaje || 'Error en el registro';
+        }
+      } catch (error) {
+        messageDiv.classList.add('error');
+        messageDiv.textContent = 'Error de conexión con el servidor';
+      }
+    });
+  </script>
+</body>
+</html>

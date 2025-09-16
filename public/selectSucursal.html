@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<title>Seleccionar Sucursal</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Sucursal</title>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+    <link rel="stylesheet" href="public/CSS/estilos.css">
+    <link rel="stylesheet" href="public/CSS/selectSucursal.css">
+</head>
+
+<body>
+    <br>
+    <div class="contenedor">
+        <h2>Selecciona una Sucursal</h2>
+        <select id="sucursalSelect">
+            <option value="">Seleccione una sucursal</option>
+        </select>
+        <br>
+        <button onclick="seleccionarSucursal()">Confirmar</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarSucursales();
+
+            document.getElementById('sucursalSelect').addEventListener('change', function () {
+
+                const sucursalId = this.value;
+
+                localStorage.setItem('sucursalId', sucursalId);
+
+                // Enviar al backend en ese momento
+                fetch(`/api/historial?sucursalId=${sucursalId}`)
+                    .then(res => res.json())
+                    .then(data => console.log(data));
+
+
+            });
+        });
+
+        function cargarSucursales() {
+            fetch('/api/sucursales')
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data)) return;
+                    const select = document.getElementById('sucursalSelect');
+
+                    data.forEach(sucursal => {
+                        const option = document.createElement('option');
+                        option.value = sucursal.id;
+                        option.textContent = sucursal.nombre;
+                        select.appendChild(option);
+                    });
+
+                    // Restaurar selección
+                    const guardada = localStorage.getItem('sucursalId');
+                    if (guardada) {
+                        select.value = guardada;
+                    }
+                });
+        }
+        function seleccionarSucursal() {
+            const select = document.getElementById('sucursalSelect');
+            const id = select.value;
+            if (id) {
+                localStorage.setItem('sucursalId', id);
+                localStorage.setItem('sucursalNombre', select.options[select.selectedIndex].text);
+                console.log(select.options[select.selectedIndex].text);
+                window.location.href = 'venta.html';
+            } else {
+                alert('Por favor selecciona una sucursal');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

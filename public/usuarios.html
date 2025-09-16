@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión de Usuarios - Pollo Frito</title>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+    <link rel="stylesheet" href="public/CSS/estilos.css">
+    <link rel="stylesheet" href="public/CSS/productos.css">
+
+</head>
+
+<body>
+    <div id="navbar"></div>
+    <h2>Gestión de Usuarios</h2>
+
+    <form id="usuarioForm" style="margin-bottom: 20px;">
+        <input type="hidden" id="usuarioId" />
+        <input type="text" id="nombre" placeholder="Nombre" required />
+        <input type="text" id="usuario" placeholder="Usuario" required />
+        <input type="email" id="correo" placeholder="Correo electrónico" />
+        <input type="password" id="contrasena" placeholder="Contraseña" required />
+        <select id="rol">
+            <option value="vendedor">Vendedor</option>
+            <option value="admin">Administrador</option>
+        </select>
+        <select id="estado">
+            <option value="true" selected>Activo</option>
+            <option value="false">Inactivo</option>
+        </select>
+        <button type="submit">Guardar Usuario</button>
+    </form>
+
+    <input type="text" id="buscadorUsuarios" placeholder="Buscar usuario..." class="form-control mb-3">
+
+    <table id="usuariosTable">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="message"></div>
+    <div id="notificacion" class="notificacion oculto"></div>
+    <div id="pantalla-cargando" class="cargando oculto">
+        <div class="spinner"></div>
+        <p>Cargando usuarios...</p>
+    </div>
+
+    <script src="public/JS/navbar.js"></script>
+    <script src="public/JS/usuarios.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+ body {
+     font-family: Arial, sans-serif;
+     height: 100vh;
+     margin: 0;
+     display: flex;
+     justify-content: center;
+     /* Centrado horizontal */
+     align-items: center;
+     /* Centrado vertical */
+     background-color: #f4f4f4;
+ }
+
+ .contenedor {
+     text-align: center;
+     background: white;
+     padding: 30px;
+     border-radius: 10px;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+
+ h2 {
+     margin-bottom: 20px;
+ }
+
+ #sucursalSelect {
+     width: 250px;
+     padding: 10px;
+     font-size: 16px;
+     margin-bottom: 15px;
+ }

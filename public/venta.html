@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Venta</title>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/de34k65kg/image/upload/v1754842743/LOGO_BROASTER_REY_DEL_POLLO_FRITO_j2tlqx.png">
+    <link rel="stylesheet" href="public/CSS/estilos.css">
+    <link rel="stylesheet" href="public/CSS/venta.css">
+
+</head>
+
+
+
+<body>
+    <div id="navbar"></div>
+
+    <main style="display: flex; flex: 1;">
+        <div class="contenido">
+            <div class="tabs" id="categorias"></div>
+            <div class="productos" id="productos"></div>
+        </div>
+
+        <div class="carrito" id="carrito">
+            <h2><i class="fa-solid fa-cart-shopping"></i> Carrito</h2>
+            <div id="lista-carrito"></div>
+            <div class="total" id="total">Total: Q0.00</div>
+            <div class="botones">
+                <button id="limpiarCarritoBtn"><i class="fa-solid fa-trash-can"></i> Limpiar carrito</button>
+                <button id="btnFinalizarVenta"><i class="fa-solid fa-check"></i> Finalizar venta</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const categoriasContenedor = document.getElementById('categorias');
+        const productosContenedor = document.getElementById('productos');
+        const listaCarrito = document.getElementById('lista-carrito');
+        const totalCarrito = document.getElementById('total');
+
+        let productos = [];
+        let carrito = {};
+        let categoriaSeleccionada = '';
+        const usuario = JSON.parse(localStorage.getItem('usuarioActual'));
+
+        if (!usuario) {
+            mostrarNotificacion('Debes iniciar sesión primero', 'error');
+            window.location.href = 'login.html';
+        }
+
+        async function cargarProductos() {
+            try {
+                const sucursalId = localStorage.getItem('sucursalId') || '1'; // Por defecto 1 si no existe
+                const urlConSucursal = `/api/productos?sucursal=${encodeURIComponent(sucursalId)}`;
+
+                const res = await fetch(urlConSucursal);
+                if (!res.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                productos = await res.json();
+
+                const categorias = [...new Set(productos.map(p => p.categoria))];
+                categoriaSeleccionada = categorias[0];
+
+                mostrarCategorias(categorias);
+                mostrarProductos();
+            } catch (error) {
+                mostrarNotificacion('Error al mostrar los productos', 'error');
+                console.error(error);
+            }
+        }
+
+
+        function mostrarCategorias(categorias) {
+            categoriasContenedor.innerHTML = '';
+            categorias.forEach(cat => {
+                const btn = document.createElement('div');
+                btn.classList.add('tab');
+                if (cat === categoriaSeleccionada) btn.classList.add('active');
+                btn.textContent = cat;
+                btn.addEventListener('click', () => {
+                    categoriaSeleccionada = cat;
+                    mostrarCategorias(categorias);
+                    mostrarProductos();
+                });
+                categoriasContenedor.appendChild(btn);
+            });
+        }
+
+        function mostrarProductos() {
+            productosContenedor.innerHTML = '';
+            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada && p.activo);
+            filtrados.forEach(prod => {
+                const card = document.createElement('div');
+                card.classList.add('producto');
+                card.innerHTML = `
+          <img src="${prod.imagen || 'https://via.placeholder.com/150'}" alt="${prod.nombre}">
+          <h4>${prod.nombre}</h4>
+          <p>Q${parseFloat(prod.precio).toFixed(2)}</p>
+          <button onclick="agregarAlCarrito(${prod.id})"><i class="fa-solid fa-circle-plus"></i> Agregar</button>
+        `;
+                productosContenedor.appendChild(card);
+            });
+        }
+
+        function agregarAlCarrito(id) {
+            const producto = productos.find(p => p.id === id);
+            if (!carrito[id]) {
+                carrito[id] = { ...producto, cantidad: 1 };
+            } else {
+                carrito[id].cantidad++;
+            }
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            listaCarrito.innerHTML = '';
+            let total = 0;
+
+            Object.values(carrito).forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('item-carrito');
+                div.innerHTML = `
+          <span>${item.nombre} x${item.cantidad}</span>
+          <span>Q${(item.precio * item.cantidad).toFixed(2)}</span>
+            <div>
+                <button class="btn-mini" onclick="aumentarCantidad(${item.id})">+</button>
+                <button class="btn-mini" onclick="disminuirCantidad(${item.id})">-</button>
+                <button class="btn-mini" onclick="eliminarDelCarrito(${item.id})">x</button>
+            </div>
+        `;
+                listaCarrito.appendChild(div);
+                total += item.precio * item.cantidad;
+            });
+
+            totalCarrito.textContent = `Total: Q${total.toFixed(2)}`;
+        }
+
+
+
+        function aumentarCantidad(id) {
+            const item = carrito[id];
+            const producto = productos.find(p => p.id === id);
+            if (!item || !producto) return;
+
+            if (item.cantidad < producto.stock) {
+                item.cantidad++;
+                actualizarCarrito();
+            } else {
+                mostrarNotificacion('No hay más stock disponible', 'error');
+            }
+        }
+
+        function disminuirCantidad(id) {
+            const item = carrito[id];
+            if (!item) return;
+
+            item.cantidad--;
+            if (item.cantidad <= 0) {
+                delete carrito[id];
+            }
+            actualizarCarrito();
+        }
+
+        function eliminarDelCarrito(id) {
+            delete carrito[id];
+            actualizarCarrito();
+        }
+
+        document.getElementById('limpiarCarritoBtn').addEventListener('click', () => {
+            if (confirm('¿Quieres limpiar el carrito?')) {
+                carrito = [];
+                actualizarCarrito();
+            }
+        });
+
+        function calcularTotal() {
+            return Object.values(carrito).reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+        }
+        cargarProductos();
+    </script>
+    <script>
+        //Configuraciones para Ventana emergente de pago
+        document.addEventListener('DOMContentLoaded', () => {
+            //Configuraciones para Ventana emergente de pago
+            const modal = document.getElementById('modalPago');
+            const metodoPago = document.getElementById('metodoPago');
+            const pagoEfectivo = document.getElementById('pagoEfectivo');
+            const pagoTarjeta = document.getElementById('pagoTarjeta');
+            const montoCliente = document.getElementById('montoCliente');
+            const cambioMostrar = document.getElementById('cambioMostrar');
+            const voucher = document.getElementById('voucher');
+            const confirmarPago = document.getElementById('confirmarPago');
+
+            document.addEventListener('keydown', (e) => {
+                // Solo ejecuta si la tecla presionada es Enter y el modal está visible
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    const modal = document.getElementById('modalPago'); // o el id de tu modal
+                    if (modal && modal.style.display !== 'none') {
+                        e.preventDefault(); // evita que haga submit en formularios por defecto
+                        confirmarPago.click(); // simula el clic en el botón Confirmar
+                    }
+                }
+            });
+
+
+            // Mostrar modal
+            document.getElementById('btnFinalizarVenta').addEventListener('click', () => {
+                metodoPago.value = 'efectivo';
+                metodoPago.dispatchEvent(new Event('change'));
+
+                if (Object.keys(carrito).length === 0) {
+                    mostrarNotificacion('No hay productos en el carrito', 'error');
+                    return;
+                }
+                modal.classList.remove('oculto');
+                montoCliente.focus();
+            });
+
+            // Cerrar modal
+            window.cerrarModal = function () {
+                modal.classList.add('oculto');
+                metodoPago.value = '';
+                pagoEfectivo.classList.add('oculto');
+                pagoTarjeta.classList.add('oculto');
+                montoCliente.value = '';
+                voucher.value = '';
+                cambioMostrar.textContent = '0.00';
+            }
+
+            // Mostrar campos según método
+            metodoPago.addEventListener('change', () => {
+                pagoEfectivo.classList.add('oculto');
+                pagoTarjeta.classList.add('oculto');
+
+                if (metodoPago.value === 'efectivo') {
+                    pagoEfectivo.classList.remove('oculto');
+                    montoCliente.focus();
+                } else if (metodoPago.value === 'tarjeta') {
+                    pagoTarjeta.classList.remove('oculto');
+                    voucher.focus();
+                }
+            });
+
+            // Calcular cambio en tiempo real
+            montoCliente.addEventListener('input', () => {
+                const total = calcularTotal();
+                const entregado = parseFloat(montoCliente.value) || 0;
+                const cambio = entregado - total;
+                cambioMostrar.textContent = cambio >= 0 ? cambio.toFixed(2) : '0.00';
+            });
+
+            // Confirmar venta
+            confirmarPago.addEventListener('click', async () => {
+                mostrarCargando();
+                confirmarPago.disabled = true; // Desactiva botón
+
+                const usuario = JSON.parse(localStorage.getItem('usuarioActual'));
+                const usuario_id = usuario ? usuario.id : null;
+                const metodo = metodoPago.value;
+                const total = calcularTotal();
+                const sucursal_id = localStorage.getItem('sucursalId');
+
+                const productos = Object.values(carrito).map(p => ({
+                    producto_id: p.id,
+                    cantidad: p.cantidad,
+                    precio_unitario: p.precio
+                }));
+
+                if (!metodo || !usuario_id) {
+                    mostrarNotificacion('Completa todos los campos de pago', 'error');
+                    ocultarCargando();
+                    confirmarPago.disabled = false;
+                    return;
+                }
+
+                let venta = { usuario_id, metodo_pago: metodo, total, productos, sucursal_id };
+
+                if (metodo === 'efectivo') {
+                    const entregado = parseFloat(montoCliente.value);
+                    if (isNaN(entregado) || entregado < total) {
+                        mostrarNotificacion('El monto entregado es insuficiente', 'error');
+                        ocultarCargando();
+                        confirmarPago.disabled = false;
+                        return;
+                    }
+                    venta.monto_cliente = entregado;
+                } else if (metodo === 'tarjeta') {
+                    const numVoucher = voucher.value.trim();
+                    if (!numVoucher) {
+                        mostrarNotificacion('Debe ingresar el número de autorización', 'error');
+                        ocultarCargando();
+                        confirmarPago.disabled = false;
+                        return;
+                    }
+                    venta.voucher = numVoucher;
+                }
+
+                try {
+                    const res = await fetch('http://localhost:3000/api/ventas/finalizar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(venta)
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        mostrarNotificacion('Venta registrada correctamente', 'exito');
+                        carrito = {};
+                        actualizarCarrito();
+                        cerrarModal();
+                    } else {
+                        mostrarNotificacion(data.mensaje || 'Error registrando venta', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    mostrarNotificacion('Error de conexión con el servidor', 'error');
+                }
+                ocultarCargando();
+                confirmarPago.disabled = false;
+            });
+        });
+
+    </script>
+
+    <script src="public/JS/navbar.js"></script>
+    <script src="public/JS/utils.js"></script>
+
+    <!-- Modal de pago -->
+    <div id="modalPago" class="modal oculto">
+        <div class="modal-contenido">
+            <h2>Finalizar Venta</h2>
+
+            <label for="metodoPago">Método de pago:</label>
+            <select id="metodoPago">
+                <option value="efectivo" selected><i class="fa-solid fa-money-bill"></i> Efectivo</option>
+                <option value="tarjeta"><i class="fa-solid fa-credit-card"></i> Tarjeta</option>
+            </select>
+
+            <!-- Pago en efectivo -->
+            <div id="pagoEfectivo" class="oculto">
+                <label for="montoCliente">Monto recibido:</label>
+                <input type="number" id="montoCliente" min="0" step="0.01" placeholder="Q0.00">
+                <p class="cambio">Cambio: Q<span id="cambioMostrar">0.00</span></p>
+            </div>
+
+            <!-- Pago con tarjeta -->
+            <div id="pagoTarjeta" class="oculto">
+                <label for="voucher">No. de autorización:</label>
+                <input type="text" id="voucher" placeholder="Voucher del POS">
+            </div>
+
+            <div class="acciones">
+                <button id="confirmarPago" class="btn-confirmar"><i class="fa-solid fa-square-check"></i>
+                    Confirmar</button>
+                <button onclick="cerrarModal()" class="btn-cancelar"><i class="fa-solid fa-rectangle-xmark"></i>
+                    Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificacion" class="notificacion oculto"></div>
+
+    <div id="pantalla-cargando" class="cargando oculto">
+        <div class="spinner"></div>
+        <p>Procesando venta...</p>
+    </div>
+
+
+</body>
+
+</html>
