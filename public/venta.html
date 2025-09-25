@@ -52,13 +52,12 @@
 
         async function cargarProductos() {
             try {
-                const API_BASE_URL = window.location.hostname === 'localhost'
-                    ? 'http://localhost:3000/api'
-                    : 'https://pollo-frito-app.onrender.com/api';
+                const API_BASE_URL = 'https://pollo-frito-app.onrender.com/api';
                 const sucursalId = localStorage.getItem('sucursalId') || '1'; // Por defecto 1 si no existe
                 const urlConSucursal = `${API_BASE_URL}/productos?sucursal=${encodeURIComponent(sucursalId)}`;
 
                 const res = await fetch(urlConSucursal);
+
                 if (!res.ok) {
                     throw new Error('Error en la respuesta del servidor');
                 }
@@ -302,11 +301,12 @@
                 }
 
                 try {
-                    const res = await fetch('http://localhost:3000/api/ventas/finalizar', {
+                    const res = await fetch('https://pollo-frito-app.onrender.com/api/ventas/finalizar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(venta)
                     });
+
 
                     const data = await res.json();
 
