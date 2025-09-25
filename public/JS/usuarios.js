@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apiUrl = 'http://localhost:3000/api/usuarios';
+
+    const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/api/usuarios'
+        : 'https://pollo-frito-app.onrender.com/api/usuarios';
+
+
     const tabla = document.querySelector('#usuariosTable tbody');
     const form = document.getElementById('usuarioForm');
 
