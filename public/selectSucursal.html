@@ -33,9 +33,11 @@
 
                 localStorage.setItem('sucursalId', sucursalId);
 
-
+                const API_BASE_URL = window.location.hostname === 'localhost'
+                    ? 'http://localhost:3000/api'
+                    : 'https://pollo-frito-app.onrender.com/api';
                 // Enviar al backend en ese momento
-                fetch(`/api/historial?sucursalId=${sucursalId}`)
+                fetch(`${API_BASE_URL}/historial?sucursalId=${sucursalId}`)
                     .then(res => res.json())
                     .then(data => console.log(data));
 
@@ -71,9 +73,9 @@
                 localStorage.setItem('sucursalId', sucursalObj.id);
                 localStorage.setItem('sucursalNombre', sucursalObj.nombre);
                 localStorage.setItem('sucursalDireccion', sucursalObj.direccion);
-                
+
                 console.log(select.options[select.selectedIndex].text);
-                
+
                 window.location.href = 'venta.html';
             } else {
                 alert('Por favor selecciona una sucursal');

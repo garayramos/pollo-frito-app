@@ -52,8 +52,11 @@
 
         async function cargarProductos() {
             try {
+                const API_BASE_URL = window.location.hostname === 'localhost'
+                    ? 'http://localhost:3000/api'
+                    : 'https://pollo-frito-app.onrender.com/api';
                 const sucursalId = localStorage.getItem('sucursalId') || '1'; // Por defecto 1 si no existe
-                const urlConSucursal = `/api/productos?sucursal=${encodeURIComponent(sucursalId)}`;
+                const urlConSucursal = `${API_BASE_URL}/productos?sucursal=${encodeURIComponent(sucursalId)}`;
 
                 const res = await fetch(urlConSucursal);
                 if (!res.ok) {
@@ -392,36 +395,6 @@
             ventana.close();
         }
 
-        const PDFDocument = require('pdfkit');
-        const fs = require('fs');
-
-        function guardarRecibo(venta) {
-            const doc = new PDFDocument({ size: [250, 600], margin: 10 });
-            const ruta = `./recibos/recibo_${venta.venta_id}.pdf`;
-            doc.pipe(fs.createWriteStream(ruta));
-
-            doc.fontSize(12).text("Broaster Rey del Pollo Frito", { align: "center" });
-            doc.text("Sucursal: Jalapa", { align: "center" });
-            doc.moveDown();
-            doc.text(`Venta No: ${venta.venta_id}`);
-            doc.text(`Fecha: ${new Date(venta.fecha).toLocaleString()}`);
-            doc.moveDown();
-
-            doc.text("Producto        Cant    Total");
-            doc.moveDown();
-            venta.productos.forEach(p => {
-                const cantidad = Number(p.cantidad) || 0;
-                const precio = Number(p.precio_unitario) || 0;
-                const subtotal = cantidad * precio;
-                doc.text(`${p.nombre}   ${cantidad}   Q${subtotal.toFixed(2)}`);
-            });
-
-            doc.moveDown();
-            doc.text(`TOTAL: Q${venta.total.toFixed(2)}`, { align: "right" });
-            doc.end();
-
-            console.log("Recibo guardado en:", ruta);
-        }
 
     </script>
 
