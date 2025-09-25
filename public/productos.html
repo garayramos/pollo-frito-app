@@ -117,19 +117,17 @@
 
         // Cargar productos
         async function cargarProductos() {
-
+            mostrarCargando();
             try {
-                const sucursalId = localStorage.getItem('sucursalId') || '1'; // default 1 si no hay nada
                 const urlConSucursal = apiUrl + `?sucursal=${sucursalId}`;
-
                 const res = await fetch(urlConSucursal);
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.mensaje || 'Error desconocido');
-                }
-                mostrarCargando();
                 const productos = await res.json();
-                console.log(productos);
+
+                const sucursalId = localStorage.getItem('sucursalId') || '1'; // default 1 si no hay nada
+
+                if (!res.ok) {
+                    throw new Error(productos.mensaje || 'Error desconocido');
+                }
 
                 productosTableBody.innerHTML = '';
 
@@ -158,11 +156,12 @@
         `;
                     productosTableBody.appendChild(tr);
                 });
-                ocultarCargando();
                 asignarListenersToggle();
             } catch (error) {
                 console.error('Error al obtener productos:', error.message);
                 mostrarNotificacion('Error al mostrar los productos: ' + error.message, 'error');
+            } finally {
+                ocultarCargando();
             }
         }
 
