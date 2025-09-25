@@ -115,11 +115,12 @@
         async function cargarProductos() {
             mostrarCargando();
             try {
+                const sucursalId = localStorage.getItem('sucursalId') || '1'; // default 1 si no hay nada
+
                 const urlConSucursal = apiUrl + `?sucursal=${sucursalId}`;
                 const res = await fetch(urlConSucursal);
                 const productos = await res.json();
 
-                const sucursalId = localStorage.getItem('sucursalId') || '1'; // default 1 si no hay nada
 
                 if (!res.ok) {
                     throw new Error(productos.mensaje || 'Error desconocido');
