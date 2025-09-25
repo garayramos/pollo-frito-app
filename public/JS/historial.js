@@ -94,8 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function abrirModalDetalle(ventaId) {
         mostrarCargando();
         document.getElementById('detalle-id-pedido').textContent = `#${ventaId}`;
+        const sucursalId = localStorage.getItem('sucursalId');
+
         // Aquí haces fetch para obtener detalles de la venta
-        fetch(`/api/historial/detalle_venta?venta_id=${ventaId}`)
+        fetch(`/api/historial/detalle_venta?venta_id=${ventaId}&sucursalId=${sucursalId}`)
 
             .then(res => res.json())
             .then(data => {

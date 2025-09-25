@@ -102,7 +102,13 @@
         </div>
     </div>
     <script>
-        const apiUrl = 'http://localhost:3000/api/productos';
+        // Detecta si estás en local o producción
+        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://pollo-frito-app.onrender.com'; // <--- cambia esto a tu URL de backend en Render
+
+        const apiUrl = `${apiBase}/api/productos`;
+
 
         const productosTableBody = document.querySelector('#productosTable tbody');
         const form = document.getElementById('productoForm');

@@ -70,7 +70,7 @@ const cambiarEstadoProducto = (req, res) => {
   const { activo } = req.body; // true o false
   console.log(`Cambiar estado producto id=${id}, nuevo estado: ${activo}`);
 
-  const sql = 'UPDATE productos SET activo = ? WHERE id = ?';
+  const sql = 'UPDATE productos SET activo = ? WHERE id = ? AND stock >= ? AND stock >= 0';
   pool.query(sql, [activo, id], (err, results) => {
     if (err) return res.status(500).json({ mensaje: 'Error al cambiar estado del producto' });
     if (results.affectedRows === 0) return res.status(404).json({ mensaje: 'Producto no encontrado' });

@@ -33,6 +33,7 @@
 
                 localStorage.setItem('sucursalId', sucursalId);
 
+
                 // Enviar al backend en ese momento
                 fetch(`/api/historial?sucursalId=${sucursalId}`)
                     .then(res => res.json())
@@ -51,13 +52,13 @@
 
                     data.forEach(sucursal => {
                         const option = document.createElement('option');
-                        option.value = sucursal.id;
+                        option.value = JSON.stringify(sucursal); // Guardamos todo el objeto
                         option.textContent = sucursal.nombre;
                         select.appendChild(option);
                     });
 
                     // Restaurar selección
-                    const guardada = localStorage.getItem('sucursalId');
+                    const guardada = localStorage.getItem('sucursalObj');
                     if (guardada) {
                         select.value = guardada;
                     }
@@ -65,11 +66,14 @@
         }
         function seleccionarSucursal() {
             const select = document.getElementById('sucursalSelect');
-            const id = select.value;
-            if (id) {
-                localStorage.setItem('sucursalId', id);
-                localStorage.setItem('sucursalNombre', select.options[select.selectedIndex].text);
+            const sucursalObj = JSON.parse(select.value);
+            if (sucursalObj) {
+                localStorage.setItem('sucursalId', sucursalObj.id);
+                localStorage.setItem('sucursalNombre', sucursalObj.nombre);
+                localStorage.setItem('sucursalDireccion', sucursalObj.direccion);
+                
                 console.log(select.options[select.selectedIndex].text);
+                
                 window.location.href = 'venta.html';
             } else {
                 alert('Por favor selecciona una sucursal');

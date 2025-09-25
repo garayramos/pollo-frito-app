@@ -309,11 +309,24 @@
 
                     if (res.ok) {
                         mostrarNotificacion('Venta registrada correctamente', 'exito');
+
+                        cerrarModal();
+
+                        // 👇 Llamamos la impresión
+                        imprimirRecibo({
+                            venta_id: data.venta_id,
+                            total,
+                            metodo_pago: metodo,
+                            productos: Object.values(carrito),
+                            sucursal_id,
+                            fecha: new Date(),
+                            monto_cliente: venta.monto_cliente || null,
+                            voucher: venta.voucher || null
+                        });
                         carrito = {};
                         actualizarCarrito();
-                        cerrarModal();
                     } else {
-                        mostrarNotificacion(data.mensaje || 'Error registrando venta', 'error');
+                        mostrarNotificacion(data.message || 'Error registrando venta', 'error');
                     }
                 } catch (err) {
                     console.error(err);
@@ -325,6 +338,94 @@
         });
 
     </script>
+
+    <script>
+        const sucursalDireccion = localStorage.getItem('sucursalDireccion');
+        function imprimirRecibo(venta) {
+            let contenido = `
+        <div style="font-family: monospace; width: 250px;">
+            <h3 style="text-align:center;">Broaster Rey del Pollo Frito</h3>
+            <p style="text-align:center;">${sucursalDireccion}</p>
+            <p>Venta No: ${venta.venta_id}</p>
+            <p>Fecha: ${new Date(venta.fecha).toLocaleString()}</p>
+            <hr>
+            <table style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Producto</th>
+                        <th style="text-align:right;">Cant</th>
+                        <th style="text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${venta.productos.map(p => {
+                const nombre = p.nombre || p.descripcion || "Producto";
+                const cantidad = Number(p.cantidad) || 0;
+                const precio = Number(p.precio_unitario) || 0;
+                const subtotal = cantidad * precio;
+                return `
+                        <tr>
+                            <td>${nombre}</td>
+                            <td style="text-align:right;">${cantidad}</td>
+                            <td style="text-align:right;">Q${subtotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+            }).join('')}
+                </tbody>
+            </table>
+            <hr>
+            <p style="text-align:right; font-weight:bold;">TOTAL: Q${(Number(venta.total) || 0).toFixed(2)}</p>
+            <p>Método: ${venta.metodo_pago}</p>
+            ${venta.metodo_pago === 'efectivo' ? `<p>Efectivo: Q${venta.monto_cliente} | Cambio: Q${(venta.monto_cliente - venta.total).toFixed(2)}</p>` : ''}
+            ${venta.metodo_pago === 'tarjeta' ? `<p>Voucher: ${venta.voucher}</p>` : ''}
+            <hr>
+            <p style="text-align:center;">¡Gracias por su compra!</p>
+        </div>
+    `;
+
+            // Crear ventana emergente
+            const ventana = window.open('', '_blank', 'width=300,height=600');
+            ventana.document.write(contenido);
+            ventana.document.close();
+            ventana.focus();
+            ventana.print();
+            ventana.close();
+        }
+
+        const PDFDocument = require('pdfkit');
+        const fs = require('fs');
+
+        function guardarRecibo(venta) {
+            const doc = new PDFDocument({ size: [250, 600], margin: 10 });
+            const ruta = `./recibos/recibo_${venta.venta_id}.pdf`;
+            doc.pipe(fs.createWriteStream(ruta));
+
+            doc.fontSize(12).text("Broaster Rey del Pollo Frito", { align: "center" });
+            doc.text("Sucursal: Jalapa", { align: "center" });
+            doc.moveDown();
+            doc.text(`Venta No: ${venta.venta_id}`);
+            doc.text(`Fecha: ${new Date(venta.fecha).toLocaleString()}`);
+            doc.moveDown();
+
+            doc.text("Producto        Cant    Total");
+            doc.moveDown();
+            venta.productos.forEach(p => {
+                const cantidad = Number(p.cantidad) || 0;
+                const precio = Number(p.precio_unitario) || 0;
+                const subtotal = cantidad * precio;
+                doc.text(`${p.nombre}   ${cantidad}   Q${subtotal.toFixed(2)}`);
+            });
+
+            doc.moveDown();
+            doc.text(`TOTAL: Q${venta.total.toFixed(2)}`, { align: "right" });
+            doc.end();
+
+            console.log("Recibo guardado en:", ruta);
+        }
+
+    </script>
+
+
 
     <script src="public/JS/navbar.js"></script>
     <script src="public/JS/utils.js"></script>
