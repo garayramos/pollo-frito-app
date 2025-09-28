@@ -101,6 +101,82 @@
             </form>
         </div>
     </div>
+
+    <div id="modalAgregarStock" class="modal oculto">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModalStock">&times;</span>
+            <h3 id="tituloModalStock">Agregar Stock</h3>
+            <form id="formAgregarStock">
+                <input type="hidden" id="productoStockId" />
+                <label for="cantidadStock">Cantidad a agregar:</label>
+                <input type="number" id="cantidadStock" min="1" required />
+                <label for="motivoStock">Motivo (opcional):</label>
+                <input type="text" id="motivoStock" />
+                <button type="submit">Agregar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modalStock = document.getElementById('modalAgregarStock');
+        const cerrarModalStock = document.getElementById('cerrarModalStock');
+        const formAgregarStock = document.getElementById('formAgregarStock');
+
+        function abrirAgregarStockModal(id, nombre) {
+            document.getElementById('productoStockId').value = id;
+            document.getElementById('tituloModalStock').textContent = `Agregar Stock - ${nombre}`;
+            modalStock.classList.remove('oculto');
+            modalStock.style.display = 'block';
+        }
+
+        cerrarModalStock.addEventListener('click', () => {
+            modalStock.classList.add('oculto');
+            modalStock.style.display = 'none';
+            formAgregarStock.reset();
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target == modalStock) {
+                modalStock.classList.add('oculto');
+                modalStock.style.display = 'none';
+                formAgregarStock.reset();
+            }
+        });
+
+        // Enviar formulario
+        formAgregarStock.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const productoId = document.getElementById('productoStockId').value;
+            const cantidad = parseInt(document.getElementById('cantidadStock').value);
+            const motivo = document.getElementById('motivoStock').value.trim();
+            const sucursal = localStorage.getItem('sucursalId') || 1;
+            const usuarioId = localStorage.getItem('usuarioId') || 1; // debes tenerlo en localStorage
+
+            try {
+                const res = await fetch(`${apiBase}/api/inventario/agregar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productoId, cantidad, motivo, sucursalId: sucursal, usuarioId })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    mostrarNotificacion(data.mensaje, 'exito');
+                    modalStock.classList.add('oculto');
+                    modalStock.style.display = 'none';
+                    formAgregarStock.reset();
+                    cargarProductos(); // actualizar tabla
+                } else {
+                    mostrarNotificacion(data.mensaje || 'Error al agregar stock', 'error');
+                }
+            } catch {
+                mostrarNotificacion('Error de conexión con el servidor', 'error');
+            }
+        });
+
+    </script>
+
+
     <script>
         const apiBase = 'https://pollo-frito-app.onrender.com';
         const apiUrl = `${apiBase}/api/productos`;
@@ -149,6 +225,7 @@
             <td class="actions">
             <button onclick="editarProducto(${prod.id})"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
             <button onclick="eliminarProducto(${prod.id})"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+            <button onclick="abrirAgregarStockModal(${prod.id}, '${prod.nombre}')"><i class="fa-solid fa-plus"></i> Agregar</button>
             </td>
         `;
                     productosTableBody.appendChild(tr);
