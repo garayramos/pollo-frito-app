@@ -11,7 +11,7 @@ const agregarStock = (req, res) => {
     // Primero, actualizar el stock en productos
     const sqlUpdateStock = 'UPDATE productos SET stock = stock + ? WHERE id = ? AND sucursal_id = ?';
     pool.query(sqlUpdateStock, [cantidad, productoId, sucursalId], (err, results) => {
-        if (err) return res.status(500).json({ mensaje: 'Error al actualizar stock' });
+        if (err) return res.status(500).json({ mensaje: 'Error al actualizar stock', error: err });
         if (results.affectedRows === 0) return res.status(404).json({ mensaje: 'Producto no encontrado en esa sucursal' });
 
         // Luego, registrar movimiento en inventario
@@ -19,7 +19,7 @@ const agregarStock = (req, res) => {
       (producto_id, sucursal_id, tipo_movimiento, cantidad, motivo, creado_por)
       VALUES (?, ?, 'entrada', ?, ?, ?)`;
         pool.query(sqlInsertInventario, [productoId, sucursalId, cantidad, motivo || null, usuarioId], (err2) => {
-            if (err2) return res.status(500).json({ mensaje: 'Error al registrar movimiento' });
+            if (err2) return res.status(500).json({ mensaje: 'Error al registrar movimiento', error: err2 });
             res.json({ mensaje: 'Stock agregado correctamente' });
         });
     });
