@@ -363,6 +363,7 @@
                 <tbody>
                     ${venta.productos.map(p => {
                 const nombre = p.nombre || p.descripcion || "Producto";
+                
                 const cantidad = Number(p.cantidad) || 0;
                 const precio = Number(p.precio_unitario) || 0;
                 const subtotal = cantidad * precio;

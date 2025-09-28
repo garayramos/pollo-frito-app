@@ -261,12 +261,14 @@
 
             const metodo = id ? 'PUT' : 'POST';
             const url = id ? `${apiUrl}/${id}` : apiUrl;
+            const sucursal = localStorage.getItem('sucursalId') || 1;
+
 
             try {
                 const res = await fetch(url, {
                     method: metodo,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, descripcion, precio, stock, categoria, imagen, activo }),
+                    body: JSON.stringify({ nombre, descripcion, precio, stock, categoria, activo, imagen, sucursal }),
                 });
                 const data = await res.json();
 
