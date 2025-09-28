@@ -45,7 +45,7 @@ app.use('/api/sucursales', require('./routes/sucursalesRoutes'));
 const inventarioRoutes = require('./routes/inventarioRoutes');
 app.use('/api/inventario', inventarioRoutes);
 
-const impresoraRoutes = require('./impresoraRoutes');
+const impresoraRoutes = require('./routes/impresoraRoutes');
 app.use('/api', impresoraRoutes);
 
 
