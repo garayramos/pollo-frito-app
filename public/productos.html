@@ -118,7 +118,7 @@
     </div>
 
     <script>
-        
+
         const modalStock = document.getElementById('modalAgregarStock');
         const cerrarModalStock = document.getElementById('cerrarModalStock');
         const formAgregarStock = document.getElementById('formAgregarStock');
@@ -147,11 +147,11 @@
         // Enviar formulario
         formAgregarStock.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const productoId = document.getElementById('productoStockId').value;
+            const productoId = parseInt(document.getElementById('productoStockId').value);
             const cantidad = parseInt(document.getElementById('cantidadStock').value);
             const motivo = document.getElementById('motivoStock').value.trim();
-            const sucursal = localStorage.getItem('sucursalId') || 1;
-            const usuarioId = localStorage.getItem('usuarioId') || 1; // debes tenerlo en localStorage
+            const sucursal = parseInt(localStorage.getItem('sucursalId')) || 1;
+            const usuarioId = parseInt(localStorage.getItem('usuarioId')) || 1;
 
             try {
                 const res = await fetch(`${apiBase}/api/inventario/agregar`, {
