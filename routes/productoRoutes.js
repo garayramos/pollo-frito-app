@@ -20,8 +20,4 @@ router.delete('/:id', eliminarProducto);
 router.get('/:id', obtenerProductoPorId);
 router.put('/:id/estado', cambiarEstadoProducto);
 
-const inventarioRoutes = require('./inventarioRoutes');
-app.use('/api/inventario', inventarioRoutes);
-
-
 module.exports = router;

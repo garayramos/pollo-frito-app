@@ -14,6 +14,10 @@ app.use(session({
   saveUninitialized: false,
 }));
 
+const inventarioRoutes = require('./inventarioRoutes');
+app.use('/api/inventario', inventarioRoutes);
+
+
 // Middleware para parsear JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
