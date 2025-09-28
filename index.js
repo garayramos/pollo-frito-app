@@ -14,9 +14,6 @@ app.use(session({
   saveUninitialized: false,
 }));
 
-const inventarioRoutes = require('./inventarioRoutes');
-app.use('/api/inventario', inventarioRoutes);
-
 
 // Middleware para parsear JSON y formularios
 app.use(express.json());
@@ -45,6 +42,8 @@ app.use('/api/historial', require('./routes/historialRoutes'));
 app.use('/api/usuarios', require('./routes/usuariosRoutes'));
 app.use('/api/sucursales', require('./routes/sucursalesRoutes'));
 
+const inventarioRoutes = require('./inventarioRoutes');
+app.use('/api/inventario', inventarioRoutes);
 
 app.get('/productos.html', verificarSesion, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'productos.html'));
