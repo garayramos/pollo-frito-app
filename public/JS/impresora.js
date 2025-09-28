@@ -1,5 +1,3 @@
-// public/JS/impresora.js
-import { mostrarNotificacion } from './utils.js';
 
 const impresorasSelect = document.getElementById('impresorasSelect');
 const guardarBtn = document.getElementById('guardarImpresoraBtn');
