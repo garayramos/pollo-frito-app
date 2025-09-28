@@ -182,3 +182,9 @@ body {
     margin-left: 2px;
     margin-right: 2px;
 }
+
+.producto.inactivo {
+  opacity: 0.5;
+  pointer-events: none; /* no deja hacer clic */
+  filter: grayscale(70%);
+}

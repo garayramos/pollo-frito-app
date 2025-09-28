@@ -97,12 +97,25 @@
             filtrados.forEach(prod => {
                 const card = document.createElement('div');
                 card.classList.add('producto');
+
+                const estaDesactivado = !prod.activo || prod.stock <= 0;
+
                 card.innerHTML = `
           <img src="${prod.imagen || 'https://via.placeholder.com/150'}" alt="${prod.nombre}">
           <h4>${prod.nombre}</h4>
           <p>Q${parseFloat(prod.precio).toFixed(2)}</p>
-          <button onclick="agregarAlCarrito(${prod.id})"><i class="fa-solid fa-circle-plus"></i> Agregar</button>
+            <button ${estaDesactivado ? 'disabled' : ''} 
+                style="${estaDesactivado ? 'opacity:0.5; cursor:not-allowed;' : ''}"
+                onclick="${estaDesactivado ? '' : `agregarAlCarrito(${prod.id})`}">
+                <i class="fa-solid fa-circle-plus"></i> Agregar
+            </button>
         `;
+                // Opacamos la tarjeta solo si está desactivada
+                if (estaDesactivado) {
+                    card.style.opacity = '0.5';
+                }
+
+
                 productosContenedor.appendChild(card);
             });
         }
@@ -363,7 +376,7 @@
                 <tbody>
                     ${venta.productos.map(p => {
                 const nombre = p.nombre || p.descripcion || "Producto";
-                
+
                 const cantidad = Number(p.cantidad) || 0;
                 const precio = Number(p.precio_unitario) || 0;
                 const subtotal = cantidad * precio;

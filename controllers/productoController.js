@@ -43,10 +43,13 @@ const actualizarProducto = (req, res) => {
   const { nombre, descripcion, precio, stock, categoria, activo, imagen, sucursal } = req.body;
 
   console.log('ID:', id);
+
+  const estadoFinal = stock === 0 ? 0 : (activo ? 1 : 0);
+
   const sql = `UPDATE productos 
                SET nombre = ?, descripcion = ?, precio = ?, stock = ?, categoria = ?, activo = ?, imagen = ?,
                sucursal_id = ? WHERE id = ?`;
-  pool.query(sql, [nombre, descripcion, precio, stock, categoria, activo, imagen, sucursal, id], (err, results) => {
+  pool.query(sql, [nombre, descripcion, precio, stock, categoria, estadoFinal, imagen, sucursal, id], (err, results) => {
     if (err) return res.status(500).json({ mensaje: 'Error al actualizar producto' });
     if (results.affectedRows === 0) return res.status(404).json({ mensaje: 'Producto no encontrado' });
     res.json({ mensaje: 'Producto actualizado' });
