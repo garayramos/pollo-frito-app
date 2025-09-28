@@ -9,7 +9,7 @@ const agregarStock = (req, res) => {
     }
 
     // Primero, actualizar el stock en productos
-    const sqlUpdateStock = 'UPDATE productos SET stock = stock + ? WHERE id = ? AND sucursal = ?';
+    const sqlUpdateStock = 'UPDATE productos SET stock = stock + ? WHERE id = ? AND sucursal_id = ?';
     pool.query(sqlUpdateStock, [cantidad, productoId, sucursalId], (err, results) => {
         if (err) return res.status(500).json({ mensaje: 'Error al actualizar stock' });
         if (results.affectedRows === 0) return res.status(404).json({ mensaje: 'Producto no encontrado en esa sucursal' });
