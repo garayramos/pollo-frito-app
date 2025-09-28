@@ -151,7 +151,14 @@
             const cantidad = parseInt(document.getElementById('cantidadStock').value);
             const motivo = document.getElementById('motivoStock').value.trim();
             const sucursal = parseInt(localStorage.getItem('sucursalId')) || 1;
-            const usuarioId = parseInt(localStorage.getItem('usuarioId')) || 1;
+
+            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+            const usuarioId = usuarioActual ? usuarioActual.id : null;
+
+            if (!usuarioId) {
+                mostrarNotificacion('Usuario no válido', 'error');
+                return;
+            }
 
             try {
                 const res = await fetch(`${apiBase}/api/inventario/agregar`, {
