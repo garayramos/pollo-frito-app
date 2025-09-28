@@ -93,7 +93,7 @@
 
         function mostrarProductos() {
             productosContenedor.innerHTML = '';
-            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada && p.activo);
+            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada);
             filtrados.forEach(prod => {
                 const card = document.createElement('div');
                 card.classList.add('producto');
