@@ -81,8 +81,8 @@ app.get('/selectSucursal.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'selectSucursal.html'));
 });
 
-app.get('/configuracion', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/configuracion.html'));
+app.get('/configuracion.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'configuracion.html'));
 });
 
 
