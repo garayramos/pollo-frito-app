@@ -45,6 +45,10 @@ app.use('/api/sucursales', require('./routes/sucursalesRoutes'));
 const inventarioRoutes = require('./routes/inventarioRoutes');
 app.use('/api/inventario', inventarioRoutes);
 
+const impresoraRoutes = require('./impresoraRoutes');
+app.use('/api', impresoraRoutes);
+
+
 app.get('/productos.html', verificarSesion, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'productos.html'));
 });
@@ -77,6 +81,9 @@ app.get('/selectSucursal.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'selectSucursal.html'));
 });
 
+app.get('/configuracion', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/configuracion.html'));
+});
 
 
 // Puerto

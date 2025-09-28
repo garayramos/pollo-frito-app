@@ -342,7 +342,18 @@
 
                         cerrarModal();
 
-                        // 👇 Llamamos la impresión
+                        const impresora = localStorage.getItem('impresora');
+                        if (!impresora) {
+                            mostrarNotificacion('No se ha configurado una impresora. Ve a Configuración para seleccionar una', 'error');
+                            return;
+                        }
+                        // luego llamas a tu endpoint de impresión con esa impresora
+                        fetch('/api/impresoras/imprimir', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ venta, impresoraNombre: impresora })
+                        });
+                        /*
                         imprimirRecibo({
                             venta_id: data.venta_id,
                             total,
@@ -353,6 +364,7 @@
                             monto_cliente: venta.monto_cliente || null,
                             voucher: venta.voucher || null
                         });
+                        */
                         carrito = {};
                         actualizarCarrito();
                     } else {
