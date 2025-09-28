@@ -122,11 +122,24 @@
 
         function agregarAlCarrito(id) {
             const producto = productos.find(p => p.id === id);
-            if (!carrito[id]) {
+            if (!producto) return;
+
+            // Verificar stock disponible
+            const itemEnCarrito = carrito[id];
+            const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.cantidad : 0;
+
+            if (cantidadEnCarrito + 1 > producto.stock) {
+                mostrarNotificacion(`No hay suficiente stock. Solo quedan ${producto.stock - cantidadEnCarrito} unidades`, 'error');
+                return;
+            }
+
+            // Agregar al carrito
+            if (!itemEnCarrito) {
                 carrito[id] = { ...producto, cantidad: 1 };
             } else {
                 carrito[id].cantidad++;
             }
+
             actualizarCarrito();
         }
 
@@ -140,17 +153,18 @@
                 div.innerHTML = `
           <span>${item.nombre} x${item.cantidad}</span>
           <span>Q${(item.precio * item.cantidad).toFixed(2)}</span>
-            <div>
-                <button class="btn-mini" onclick="aumentarCantidad(${item.id})">+</button>
-                <button class="btn-mini" onclick="disminuirCantidad(${item.id})">-</button>
-                <button class="btn-mini" onclick="eliminarDelCarrito(${item.id})">x</button>
-            </div>
+          <div>
+              <button class="btn-mini" onclick="aumentarCantidad(${item.id})">+</button>
+              <button class="btn-mini" onclick="disminuirCantidad(${item.id})">-</button>
+              <button class="btn-mini" onclick="eliminarDelCarrito(${item.id})">x</button>
+          </div>
         `;
                 listaCarrito.appendChild(div);
                 total += item.precio * item.cantidad;
             });
 
             totalCarrito.textContent = `Total: Q${total.toFixed(2)}`;
+
         }
 
 
