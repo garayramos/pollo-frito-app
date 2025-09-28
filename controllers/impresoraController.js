@@ -1,53 +1,51 @@
-const ThermalPrinter = require("node-thermal-printer").printer;
-const PrinterTypes = require("node-thermal-printer").types;
+// controllers/impresoraController.js
+const ThermalPrinter = require('node-thermal-printer').printer;
+const PrinterTypes = require('node-thermal-printer').types;
 
-// Obtener impresoras disponibles
+// Listar impresoras disponibles
 const listarImpresoras = async (req, res) => {
   try {
-    // node-thermal-printer no lista automáticamente impresoras,
-    // usamos el paquete printer de node para esto
-    const printerList = require('printer').getPrinters();
-    res.json(printerList.map(p => ({ name: p.name, status: p.status })));
+    const impresoras = await ThermalPrinter.getPrinters();
+    res.json(impresoras); // ["EPSON TM-T20", "Microsoft Print to PDF", ...]
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: 'No se pudieron listar impresoras' });
+    console.error("Error al listar impresoras:", err);
+    res.status(500).json({ mensaje: "No se pudieron listar las impresoras" });
   }
 };
 
-// Imprimir ticket
-const imprimirTicket = async (req, res) => {
-  const { venta, impresoraNombre } = req.body;
+// Guardar impresora seleccionada (opcional)
+const seleccionarImpresora = (req, res) => {
+  const { nombre } = req.body;
+  if (!nombre) return res.status(400).json({ mensaje: "Debes enviar el nombre de la impresora" });
 
-  let printer = new ThermalPrinter({
-    type: PrinterTypes.EPSON,  // cambiar según impresora del cliente
-    interface: `printer:${impresoraNombre}`,
+  // Aquí podrías guardar en BD o archivo de configuración
+  res.json({ mensaje: `Impresora "${nombre}" seleccionada correctamente` });
+};
+
+// Imprimir texto
+const imprimirTexto = async (req, res) => {
+  const { nombre, texto } = req.body;
+  if (!nombre || !texto) return res.status(400).json({ mensaje: "Debes enviar nombre y texto" });
+
+  const printer = new ThermalPrinter({
+    type: PrinterTypes.EPSON,
+    interface: `printer:${nombre}`
   });
 
-  printer.alignCenter();
-  printer.println("Broaster Rey del Pollo Frito");
-  printer.println(`Venta No: ${venta.venta_id}`);
-  printer.println(`Fecha: ${new Date().toLocaleString()}`);
-  printer.drawLine();
-
-  venta.productos.forEach(p => {
-    printer.tableCustom([
-      { text: p.nombre || "Producto", align: "LEFT", width: 0.5 },
-      { text: p.cantidad.toString(), align: "CENTER", width: 0.2 },
-      { text: `Q${(p.precio_unitario * p.cantidad).toFixed(2)}`, align: "RIGHT", width: 0.3 }
-    ]);
-  });
-
-  printer.drawLine();
-  printer.println(`TOTAL: Q${venta.total.toFixed(2)}`);
+  printer.println(texto);
   printer.cut();
 
   try {
     await printer.execute();
-    res.json({ mensaje: "Ticket impreso correctamente" });
+    res.json({ mensaje: "Impresión enviada correctamente" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: "Error al imprimir", error: err });
+    console.error("Error imprimiendo:", err);
+    res.status(500).json({ mensaje: "Error al enviar impresión" });
   }
 };
 
-module.exports = { listarImpresoras, imprimirTicket };
+module.exports = {
+  listarImpresoras,
+  seleccionarImpresora,
+  imprimirTexto
+};

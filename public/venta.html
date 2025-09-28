@@ -342,17 +342,28 @@
 
                         cerrarModal();
 
+                        // Obtener impresora seleccionada
                         const impresora = localStorage.getItem('impresora');
-                        if (!impresora) {
-                            mostrarNotificacion('No se ha configurado una impresora. Ve a Configuración para seleccionar una', 'error');
-                            return;
+                        if (impresora) {
+                            const textoTicket = generarTextoTicket(ventaData); // función que genera el texto del ticket
+                            fetch('/api/impresora/imprimir', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ nombre: impresora, texto: textoTicket })
+                            }).then(resp => resp.json())
+                                .then(data => {
+                                    if (data.mensaje) console.log(data.mensaje);
+                                }).catch(err => console.error('Error imprimiendo:', err));
                         }
-                        // luego llamas a tu endpoint de impresión con esa impresora
-                        fetch('/api/impresoras/imprimir', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ venta, impresoraNombre: impresora })
-                        });
+                        function generarTextoTicket(venta) {
+                            let texto = '=== POLLO FRITO ===\n';
+                            venta.items.forEach(item => {
+                                texto += `${item.cantidad} x ${item.nombre} - Q${item.precio}\n`;
+                            });
+                            texto += `Total: Q${venta.total}\n`;
+                            texto += 'Gracias por su compra!\n';
+                            return texto;
+                        }
                         /*
                         imprimirRecibo({
                             venta_id: data.venta_id,
