@@ -42,7 +42,7 @@ app.use('/api/historial', require('./routes/historialRoutes'));
 app.use('/api/usuarios', require('./routes/usuariosRoutes'));
 app.use('/api/sucursales', require('./routes/sucursalesRoutes'));
 
-const inventarioRoutes = require('./inventarioRoutes');
+const inventarioRoutes = require('./routes/inventarioRoutes');
 app.use('/api/inventario', inventarioRoutes);
 
 app.get('/productos.html', verificarSesion, (req, res) => {
