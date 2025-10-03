@@ -84,6 +84,11 @@
             // Filtrar las categorías para excluir las ocultas
             const categoriasVisibles = categorias.filter(cat => !categoriasOcultas.includes(cat));
 
+            // Si no hay una categoría seleccionada o la actual ya no existe, asignar la primera visible
+            if (!categoriaSeleccionada || !categoriasVisibles.includes(categoriaSeleccionada)) {
+                categoriaSeleccionada = categoriasVisibles[0];
+            }
+
             categoriasVisibles.forEach(cat => {
                 const btn = document.createElement('div');
                 btn.classList.add('tab');
