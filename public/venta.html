@@ -100,7 +100,14 @@
 
         function mostrarProductos() {
             productosContenedor.innerHTML = '';
-            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada);
+            // Categorías que NO se deben mostrar
+            const categoriasOcultas = ['Pollo frito', 'Bebidas'];
+
+            // Filtrar por categoría seleccionada y excluir las ocultas
+            const filtrados = productos.filter(p =>
+                p.categoria === categoriaSeleccionada &&
+                !categoriasOcultas.includes(p.categoria)
+            );
 
             filtrados.forEach(prod => {
                 const card = document.createElement('div');
