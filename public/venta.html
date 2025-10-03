@@ -77,7 +77,14 @@
 
         function mostrarCategorias(categorias) {
             categoriasContenedor.innerHTML = '';
-            categorias.forEach(cat => {
+
+            // Categorías que no se deben mostrar
+            const categoriasOcultas = ['Pollo frito', 'Bebidas'];
+
+            // Filtrar las categorías para excluir las ocultas
+            const categoriasVisibles = categorias.filter(cat => !categoriasOcultas.includes(cat));
+
+            categoriasVisibles.forEach(cat => {
                 const btn = document.createElement('div');
                 btn.classList.add('tab');
                 if (cat === categoriaSeleccionada) btn.classList.add('active');
@@ -93,14 +100,7 @@
 
         function mostrarProductos() {
             productosContenedor.innerHTML = '';
-            // Categorías que NO se deben mostrar
-            const categoriasOcultas = ['Pollo frito', 'Bebidas'];
-
-            // Filtrar por categoría seleccionada y excluir las ocultas
-            const filtrados = productos.filter(p =>
-                p.categoria === categoriaSeleccionada &&
-                !categoriasOcultas.includes(p.categoria)
-            );
+            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada);
 
             filtrados.forEach(prod => {
                 const card = document.createElement('div');
