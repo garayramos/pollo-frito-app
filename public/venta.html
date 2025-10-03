@@ -93,7 +93,15 @@
 
         function mostrarProductos() {
             productosContenedor.innerHTML = '';
-            const filtrados = productos.filter(p => p.categoria === categoriaSeleccionada);
+            // Categorías que NO se deben mostrar
+            const categoriasOcultas = ['Pollo frito', 'Bebidas'];
+
+            // Filtrar por categoría seleccionada y excluir las ocultas
+            const filtrados = productos.filter(p =>
+                p.categoria === categoriaSeleccionada &&
+                !categoriasOcultas.includes(p.categoria)
+            );
+
             filtrados.forEach(prod => {
                 const card = document.createElement('div');
                 card.classList.add('producto');
@@ -341,7 +349,7 @@
                         mostrarNotificacion('Venta registrada correctamente', 'exito');
 
                         cerrarModal();
-                        
+
                         imprimirRecibo({
                             venta_id: data.venta_id,
                             total,
@@ -352,7 +360,7 @@
                             monto_cliente: venta.monto_cliente || null,
                             voucher: venta.voucher || null
                         });
-                        
+
                         carrito = {};
                         actualizarCarrito();
                     } else {
@@ -390,7 +398,7 @@
                 <tbody>
                     ${venta.productos.map(p => {
                 const nombre = p.nombre || p.descripcion || "Producto";
-            
+
                 const cantidad = Number(p.cantidad) || 0;
                 const precio = Number(p.precio) || 0;
                 const subtotal = cantidad * precio;
