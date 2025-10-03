@@ -341,30 +341,7 @@
                         mostrarNotificacion('Venta registrada correctamente', 'exito');
 
                         cerrarModal();
-
-                        // Obtener impresora seleccionada
-                        const impresora = localStorage.getItem('impresora');
-                        if (impresora) {
-                            const textoTicket = generarTextoTicket(ventaData); // función que genera el texto del ticket
-                            fetch('/api/impresora/imprimir', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ nombre: impresora, texto: textoTicket })
-                            }).then(resp => resp.json())
-                                .then(data => {
-                                    if (data.mensaje) console.log(data.mensaje);
-                                }).catch(err => console.error('Error imprimiendo:', err));
-                        }
-                        function generarTextoTicket(venta) {
-                            let texto = '=== POLLO FRITO ===\n';
-                            venta.items.forEach(item => {
-                                texto += `${item.cantidad} x ${item.nombre} - Q${item.precio}\n`;
-                            });
-                            texto += `Total: Q${venta.total}\n`;
-                            texto += 'Gracias por su compra!\n';
-                            return texto;
-                        }
-                        /*
+                        
                         imprimirRecibo({
                             venta_id: data.venta_id,
                             total,
@@ -375,7 +352,7 @@
                             monto_cliente: venta.monto_cliente || null,
                             voucher: venta.voucher || null
                         });
-                        */
+                        
                         carrito = {};
                         actualizarCarrito();
                     } else {
@@ -397,7 +374,7 @@
         function imprimirRecibo(venta) {
             let contenido = `
         <div style="font-family: monospace; width: 250px;">
-            <h3 style="text-align:center;">Broaster Rey del Pollo Frito</h3>
+            <h3 style="text-align:center;">QUE POLLO MUCHA</h3>
             <p style="text-align:center;">${sucursalDireccion}</p>
             <p>Venta No: ${venta.venta_id}</p>
             <p>Fecha: ${new Date(venta.fecha).toLocaleString()}</p>
@@ -433,7 +410,7 @@
             ${venta.metodo_pago === 'efectivo' ? `<p>Efectivo: Q${venta.monto_cliente} | Cambio: Q${(venta.monto_cliente - venta.total).toFixed(2)}</p>` : ''}
             ${venta.metodo_pago === 'tarjeta' ? `<p>Voucher: ${venta.voucher}</p>` : ''}
             <hr>
-            <p style="text-align:center;">¡Gracias por su compra!</p>
+            <p style="text-align:center;">¡Gracias por tu compra!</p>
         </div>
     `;
 
